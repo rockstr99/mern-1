@@ -1,25 +1,12 @@
 const express = require("express");
 const app = express();
-
 const dotenv = require("dotenv");
+require("./db/conn");
+
+
 dotenv.config({ path: "./config.env" });
 
-//DB connection
-const mongoose = require("mongoose");
-const DB = process.env.DATABASE;
-mongoose
-  .connect(DB, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-  })
-  .then(() => {
-    console.log(`connection successful`);
-  })
-  .catch((err) => {
-    console.log(`no connection!`);
-  });
+const PORT = process.env.PORT;
 
 //creating middleware
 
@@ -48,6 +35,6 @@ app.get("/signup", (req, res) => {
   res.send("this is signup page");
 });
 
-app.listen(3000, () => {
-  console.log(`server is running at PORT 3000`);
+app.listen(PORT, () => {
+  console.log(`server is running at ${PORT}`);
 });
