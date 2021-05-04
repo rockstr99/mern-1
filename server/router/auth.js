@@ -5,6 +5,12 @@ router.get("/", (req, res) => {
   res.send(`Hello world from the server`);
 });
 
+router.post("/register", (req, res) => {
+  console.log(req.body);
+  res.json({ message: req.body });
+  //   res.send("This is my register page..");
+});
+
 router.get("/about", (req, res) => {
   res.send(`this is about page`);
 });
@@ -22,5 +28,3 @@ router.get("/signup", (req, res) => {
 });
 
 module.exports = router;
-
-
