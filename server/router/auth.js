@@ -1,81 +1,68 @@
 const express = require("express");
 const router = express.Router();
 require("../db/conn");
-
+const bcrypt = require("bcryptjs");
 const User = require("../model/userSchema");
 
 router.get("/", (req, res) => {
   res.send(`Hello world from the server`);
 });
 
-router.post("/register",  async(req, res) => {
-   const { name, email, phone, work, password, cpassword } = req.body; // destructuring of req.body
+router.post("/register", async (req, res) => {
+  const { name, email, phone, work, password, cpassword } = req.body; // destructuring of req.body
 
- if (!name || !email || !phone || !work || !password || !cpassword) {
-     return res.status(422).json({ error: "please fill the field properly... " });
+  if (!name || !email || !phone || !work || !password || !cpassword) {
+    return res
+      .status(422)
+      .json({ error: "please fill the field properly... " });
   }
 
   try {
-   const userExist = await User.findOne({ email: email })
-        if (userExist) {
-                return res.status(422).json({ error: "Email already exist.. " });
-               }
-      
-             const user = new User({name,email,phone,work,password,cpassword});
-      const userRegister  = await user.save()
+    const userExist = await User.findOne({ email: email });
+    if (userExist) {
+      return res.status(422).json({ error: "Email already exist.. " });
+    } else if (password != cpassword) {
+      return res.status(422).json({ error: "Password not matching " });
+    } else {
+      const user = new User({ name, email, phone, work, password, cpassword });
 
-if(userRegister)
-{
-  res.status(201).json({message: "user registered successfully.. "})
-}
-    
+      await user.save();
+
+      res.status(201).json({ message: "user registered successfully.. " });
+    }
   } catch (err) {
     console.log(err);
   }
-//   
- });
-
-
-// router.post("/register",  (req, res) => {
-//   const { name, email, phone, work, password, cpassword } = req.body; // destructuring of req.body
-
-//   if (!name || !email || !phone || !work || !password || !cpassword) {
-//     return res.status(422).json({ error: "please fill the field properly... " });
-//   }
-
-//   User.findOne({ email: email }).then((userExist) => {
-//         if (userExist) {
-//           return res.status(422).json({ error: "Email already exist.. " });
-//         }
-
-//         const user = new User({name,email,phone,work,password,cpassword,});
-
-//         user.save().then( () => {
-//           res.status(201).json({message: "user registered successfully.. ",})
-//         })
-//         .catch( (err) => {
-//           res.status(500).json({error: " user failed to register!",});
-//         });
-//   })
-//   .catch( (err) => {
-//         console.log(err);
-//   });
-// });
-
-router.get("/about", (req, res) => {
-  res.send(`this is about page`);
 });
 
-router.get("/contact", (req, res) => {
-  res.send(`this is contact page`);
-});
+//login route
 
-router.get("/signin", (req, res) => {
-  res.send(`this is signin page`);
-});
+router.post("/signin", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-router.get("/signup", (req, res) => {
-  res.send("this is signup page");
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ error: "Please fill all the input fields ... " });
+    }
+    //DB : UserInput
+    const userLogin = await User.findOne({ email: email });
+
+    if (userLogin) {
+      const isMatch = await bcrypt.compare(password, userLogin.password);
+
+      if (!isMatch) {
+        res.status(400).json({ error: "Invalid Credentials " });
+      } else {
+        res.json({ message: "User Signin Success!" });
+      }
+    } else {
+      res.status(400).json({ error: "Invalid Credentials " });
+    }
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 module.exports = router;
